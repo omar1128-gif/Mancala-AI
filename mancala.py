@@ -1,6 +1,16 @@
 state = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 5]
 state2 = [13, 2, 3, 0, 0, 0, 0, 5, 1, 7, 3, 1, 6, 0]
 
+mirror = {
+    0: 12,
+    1: 11,
+    2: 10,
+    3: 9,
+    4: 8,
+    5: 7
+}
+steal = True
+
 
 def display_state(state):
     print(f"""
@@ -37,5 +47,108 @@ def check_for_final(state):
     return state, is_final
 
 
-print(check_for_final(state))
-display_state(state2)
+def make_a_move(state, bin_number, player):
+    global steal
+    move = state[:]
+    another_turn = False
+    if player == "user":
+        stones = state[bin_number]
+        if stones > 0:
+            next_index = bin_number + 1
+            for x in range(stones):
+                if x == stones - 1:
+                    if move[next_index] == 0 and not next_index == 13 and not next_index == 6 and steal:
+                        if next_index < 6:
+                            mirror_index = mirror[next_index]
+                            move[bin_number] = move[bin_number] - 1
+                            move[6] = move[6] + move[mirror_index] + 1
+                            move[mirror_index] = 0
+                        elif 7 <= next_index <= 12:
+                            move[bin_number] = move[bin_number] - 1
+                            move[next_index] = move[next_index] + 1
+                    elif next_index == 6:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                        another_turn = True
+                    elif next_index == 13:
+                        next_index = 0
+                        move[bin_number] = move[bin_number] - 1
+                        if move[next_index] == 0 and steal:
+                            mirror_index = mirror[next_index]
+                            move[6] = move[6] + move[mirror_index] + 1
+                            move[mirror_index] = 0
+                        else:
+                            move[next_index] = move[next_index] + 1
+                    else:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                else:
+                    if next_index == 13:  # dropping stone in ai's mancala is skipped
+                        next_index = (next_index + 1) % 14
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                    else:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+
+                next_index = (next_index + 1) % 14
+
+            move, is_final = check_for_final(move)
+            return move, is_final, another_turn
+        else:
+            return [], False, False
+
+    elif player == "ai":
+        bin_number = bin_number + 7
+        stones = state[bin_number]
+        if stones > 0:
+            next_index = bin_number + 1
+            for x in range(stones):
+                if x == stones-1:
+                    if move[next_index] == 0 and not next_index == 6 and not next_index == 13 and steal:
+                        if 7 <= next_index <= 12:
+                            mirror_index = list(
+                                mirror.values()).index(next_index)
+                            move[bin_number] = move[bin_number] - 1
+                            move[13] = move[13] + move[mirror_index] + 1
+                            move[mirror_index] = 0
+                        elif 0 <= next_index <= 5:
+                            move[bin_number] = move[bin_number] - 1
+                            move[next_index] = move[next_index] + 1
+                    elif next_index == 13:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                        another_turn = True
+                    elif next_index == 6:
+                        next_index = 7
+                        move[bin_number] = move[bin_number] - 1
+                        if move[next_index] == 0 and steal:
+                            mirror_index = list(
+                                mirror.values()).index(next_index)
+                            move[13] = move[13] + move[mirror_index] + 1
+                            move[mirror_index] = 0
+                        else:
+                            move[next_index] = move[next_index] + 1
+                    else:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                else:
+                    if next_index == 6:  # dropping stone in user's mancala is skipped
+                        next_index = (next_index + 1) % 14
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+                    else:
+                        move[bin_number] = move[bin_number] - 1
+                        move[next_index] = move[next_index] + 1
+
+                next_index = (next_index + 1) % 14
+
+            move, is_final = check_for_final(move)
+            return move, is_final, another_turn
+
+        else:
+            return [], False, False
+
+
+# print(check_for_final(state))
+# display_state(make_a_move(state2,0,"user")[0])
