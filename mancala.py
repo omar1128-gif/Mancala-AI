@@ -159,11 +159,15 @@ def evaluate(state_tuple, is_max=1, level=0, alpha=float('-inf'), beta=float('in
     global max_levels
     global steal
     state, is_final, another_turn = state_tuple
-    possible_states = next_moves(state, "ai")
+
+    if is_max:
+        possible_states = next_moves(state, "ai")
+    else:
+        possible_states = next_moves(state, "user")
 
     optimal_next_state = tuple()
     # if we hit a state with no next moves, return the score of this state
-    # if we reached the max depth return the value of the utilty function (current score)
+    # if we reached the max depth return the value of the utility function (current score)
     if is_final or max_levels == level:
         return state[13] - state[6], state_tuple
 
