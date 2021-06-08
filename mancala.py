@@ -5,6 +5,24 @@ mirror = {0: 12, 1: 11, 2: 10, 3: 9, 4: 8, 5: 7}
 steal = True
 max_levels = 15
 
+def save_game(save_name, state, current_player, is_final, another_turn, steal, max_levels, score):
+    data = {
+        "state": state,
+        "current_player": current_player,
+        "is_final": is_final,
+        "another_turn": another_turn,
+        "steal": steal,
+        "max_levels": max_levels,
+        "score": score,
+    }
+    with open(f'{save_name}.json', 'w') as outfile:
+        json.dump(data, outfile)
+
+
+def load_previous_game(save_name):
+    with open(f'{save_name}.json') as json_file:
+        data = json.load(json_file)
+        return data
 
 def display_state(state):
     print(f"""
