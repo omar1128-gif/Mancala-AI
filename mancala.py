@@ -3,6 +3,7 @@ state2 = [13, 2, 3, 0, 0, 0, 0, 5, 1, 7, 3, 1, 6, 0]
 
 mirror = {0: 12, 1: 11, 2: 10, 3: 9, 4: 8, 5: 7}
 steal = True
+max_levels = 15
 
 
 def display_state(state):
@@ -152,6 +153,45 @@ def next_moves(state, player):
             next_moves.append((move, is_final, another_turn))
 
     return next_moves
+
+
+def evaluate(state_tuple, is_max=1, level=0, alpha=float('-inf'), beta=float('inf')):
+    global max_levels
+    global steal
+    state, is_final, another_turn = state_tuple
+    possible_states = next_moves(state, "ai")
+
+    optimal_next_state = tuple()
+    # if we hit a state with no next moves, return the score of this state
+    # if we reached the max depth return the value of the utilty function (current score)
+    if is_final or max_levels == level:
+        return state[13] - state[6], state_tuple
+
+    # if the user gets another turn flip is_max, so when it is flipped
+    # it has the correct value
+    if another_turn:
+        next_max = is_max
+    else:
+        next_max = not is_max
+
+    for next_state in possible_states:
+        score, state_tuple = evaluate(
+            next_state, next_max, level + 1, alpha, beta)
+
+        if is_max:
+            if score > alpha:
+                alpha = score
+                optimal_next_state = next_state
+        else:
+            if score < beta:
+                beta = score
+                optimal_next_state = next_state
+
+        if alpha >= beta:
+            break
+
+    score = alpha if is_max else beta
+    return score, optimal_next_state
 
 
 # print(check_for_final(state))
