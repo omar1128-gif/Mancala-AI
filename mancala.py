@@ -1,14 +1,7 @@
 state = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 5]
 state2 = [13, 2, 3, 0, 0, 0, 0, 5, 1, 7, 3, 1, 6, 0]
 
-mirror = {
-    0: 12,
-    1: 11,
-    2: 10,
-    3: 9,
-    4: 8,
-    5: 7
-}
+mirror = {0: 12, 1: 11, 2: 10, 3: 9, 4: 8, 5: 7}
 steal = True
 
 
@@ -104,7 +97,7 @@ def make_a_move(state, bin_number, player):
         if stones > 0:
             next_index = bin_number + 1
             for x in range(stones):
-                if x == stones-1:
+                if x == stones - 1:
                     if move[next_index] == 0 and not next_index == 6 and not next_index == 13 and steal:
                         if 7 <= next_index <= 12:
                             mirror_index = list(
@@ -148,6 +141,17 @@ def make_a_move(state, bin_number, player):
 
         else:
             return [], False, False
+
+
+def next_moves(state, player):
+    global steal
+    next_moves = []
+    for bin_number in range(6):
+        move, is_final, another_turn = make_a_move(state, bin_number, player)
+        if move:
+            next_moves.append((move, is_final, another_turn))
+
+    return next_moves
 
 
 # print(check_for_final(state))
