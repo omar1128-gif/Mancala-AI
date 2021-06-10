@@ -339,7 +339,7 @@ def main():
         if score > 0:
             print("\t\t\t\t\033[91mAI won!\033[0m\n")
         elif score == 0:
-            print("\t\t\t\t\033[91mDraw!\033[0m\n")
+            print("\t\t\t\t\033[92mDraw!\033[0m\n")
         else:
             print("\t\t\t\t\033[94mYou won!\033[0m\n")
 
