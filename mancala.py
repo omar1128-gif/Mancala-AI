@@ -1,9 +1,8 @@
-state = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 5]
-state2 = [13, 2, 3, 0, 0, 0, 0, 5, 1, 7, 3, 1, 6, 0]
+import json
 
 mirror = {0: 12, 1: 11, 2: 10, 3: 9, 4: 8, 5: 7}
 steal = True
-max_levels = 15
+max_levels = 5
 
 def save_game(save_name, state, current_player, is_final, another_turn, steal, max_levels, score):
     data = {
@@ -216,5 +215,136 @@ def evaluate(state_tuple, is_max=1, level=0, alpha=float('-inf'), beta=float('in
     return score, optimal_next_state
 
 
-# print(check_for_final(state))
-# display_state(make_a_move(state2,0,"user")[0])
+def main():
+    try:
+        print("Welcome to Mancala! \n")
+        try:
+            new_game = bool(int(input(
+                "Do you want a new game or load a previous game? Type 1 for new game and 0 for loading a previous game. \n")))
+        except:
+            new_game = True
+
+        global max_levels
+        global steal
+        first_turn = True
+
+        if new_game:
+            difficulty = int(
+                input("Select a difficulty (0 -> easy , 1 -> medium, 2 -> hard): \n"))
+            if difficulty == 0:
+                pass
+            elif difficulty == 1:
+                max_levels = 7
+            elif difficulty == 2:
+                max_levels = 12
+            else:
+                print("Input is not understood. setting difficulty to easy \n")
+
+            mode = int(
+                input("Do you want steal mode? Type 1 for steal and 0 for no steal \n"))
+
+            if mode:
+                steal = True
+            else:
+                steal = False
+
+            start_first = input(
+                "Do you want to start first? Type 'yes' or 'no' \n")
+
+            current_player = False
+
+            # False -> AI, True -> Human
+            if start_first == "yes":
+                current_player = True
+
+            state = [4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0]
+
+            # state_tuple -> (state_array, is_final, another_turn)
+            # at start no another turn and it is not a final move
+            state_tuple = (state, False, False)
+
+            score = state[13] - state[6]
+
+        else:  # load game from a file
+            file_name = input(
+                "Please enter the save file name without '.json' \n")
+            prev_game = load_previous_game(file_name)
+            if prev_game:
+                print("\n Sucessfuly loaded!! \n \n")
+            state_tuple = (
+                prev_game["state"], prev_game["is_final"], prev_game["another_turn"])
+            max_levels = prev_game["max_levels"]
+            steal = prev_game["steal"]
+            score = prev_game["score"]
+            current_player = prev_game["current_player"]
+
+        current_state_tuple = state_tuple
+        save_mode = input(
+            "Do you want to be asked to save the game every turn? 'yes' or 'no'\n")
+        while True:
+            current_state, is_final, another_turn = current_state_tuple
+
+            display_state(current_state)
+            score = current_state[13] - current_state[6]
+
+            if is_final:
+                break
+
+            if not first_turn and save_mode == "yes":
+                save = input(
+                    "Do you want to save the game state? Type 1 for saving and 0 for no saving \n")
+
+                if save == "1":
+                    save_name = input("Enter the save name: ")
+                    state, is_final, another_turn = current_state_tuple
+                    score = state[13] - state[6]
+                    save_game(save_name, state, current_player, is_final,
+                              another_turn, steal, max_levels, score)
+                    print("\n\t\t\t\tGame saved.\n")
+                elif save == "0":
+                    print("\n\t\t\t\tContinue playing :)\n")
+                else:
+                    print("\n\t\t\tInvalid input! not saving..\n")
+
+            if not current_player:
+                print("\t\t\t\t\033[93m-> AI's turn!\033[0m\n")
+                score, current_state_tuple = evaluate(current_state_tuple)
+            else:
+                print("\t\t\t\t\033[93m-> Your turn!\033[0m\n")
+                bin_number = int(
+                    input("Please select a bin to empty (Type a number from 1 to 6): ")) - 1
+                while not (0 <= bin_number <= 5):
+                    print("Enter a valid bin number! \n")
+                    bin_number = int(
+                        input("Please select a bin to empty (Type a number from 1 to 6): ")) - 1
+                while True:
+                    current_state_tuple = make_a_move(
+                        current_state, bin_number, "user")
+                    if len(current_state_tuple[0]) > 0:
+                        break
+                    else:
+                        print("You chose an empty bin! \n")
+                        bin_number = int(
+                            input("Please select a bin to empty (Type a number from 1 to 6): ")) - 1
+                        while not (0 <= bin_number <= 5):
+                            print("Enter a valid bin number! \n")
+                            bin_number = int(
+                                input("Please select a bin to empty (Type a number from 1 to 6): ")) - 1
+
+            first_turn = False
+            if not current_state_tuple[2]:
+                current_player = not current_player
+
+        print("\n\t\t\t\t\033[93mGame Finished!\033[0m\n")
+        if score > 0:
+            print("\t\t\t\t\033[91mAI won!\033[0m\n")
+        elif score == 0:
+            print("\t\t\t\t\033[91mDraw!\033[0m\n")
+        else:
+            print("\t\t\t\t\033[94mYou won!\033[0m\n")
+
+    except KeyboardInterrupt:
+        print("\n\033[93mClosing...\033[0m")
+
+
+main()
